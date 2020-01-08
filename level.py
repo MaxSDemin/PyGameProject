@@ -2,6 +2,12 @@ import pygame
 import sys
 import os
 
+'''def update(self):
+    self.rect = self.rect.move(self.vx, self.vy)
+    if pygame.sprite.spritecollideany(self, horizontal_borders):
+        self.vy = -self.vy
+    if pygame.sprite.spritecollideany(self, vertical_borders):
+        self.vx = -self.vx'''
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -32,9 +38,11 @@ def load_level(filename):
 
 
 def generate_level(level):
+    #print(level)
     new_player, x, y = None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
+            #print(x)
             if level[y][x] == '.':
                 Tile('empty', x, y)
             elif level[y][x] == '#':
@@ -43,7 +51,7 @@ def generate_level(level):
                 Tile('empty', x, y)
                 new_player = Player(x, y)
     # вернем игрока, а также размер поля в клетках
-    return new_player, x, y
+    return new_player, x+1, y+1
 
 
 class Tile(pygame.sprite.Sprite):
@@ -60,7 +68,7 @@ class Player(pygame.sprite.Sprite):
         self.image = player_image
         self.rect = self.image.get_rect().move(
             tile_width * pos_x + 15, tile_height * pos_y + 5)
-        self.speed = 10
+        self.speed = 5
 
     def up(self):
         self.rect.y -= self.speed
@@ -74,30 +82,6 @@ class Player(pygame.sprite.Sprite):
     def left(self):
         self.rect.x -= self.speed
 
-
-pygame.init()
-
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
-
-screen = pygame.display.set_mode((600, 800))
-tile_width = tile_height = 50
-clock = pygame.time.Clock()
-FPS = 50
-
-tile_images = {
-    'wall': load_image('box.png'),
-    'empty': load_image('grass.png')
-}
-player_image = load_image('mar.png')
-
-player, x, y = generate_level(load_level('level.txt'))
-
-size = WIDTH, HEIGHT = x * tile_width, y * tile_height
-screen = pygame.display.set_mode(size)
-
-
 def terminate():
     pygame.quit()
     sys.exit()
@@ -106,12 +90,13 @@ def terminate():
 def start_screen():
     intro_text = ["ЗАСТАВКА", "",
                   "Правила игры",
-                  "Если в правилах несколько строк,",
-                  "приходится выводить их построчно"]
+                  "Чтобы двиграть нажимайте стрелки.",'',
+                  "Цель игры не известна, но скоро она точно будет!",'',
+                  "Хорошей игры!"]
 
     fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
+    font = pygame.font.Font('font.ttf', 15)
     text_coord = 50
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
@@ -132,12 +117,34 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
+pygame.init()
+
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+
+screen = pygame.display.set_mode((1024, 800))
+tile_width = tile_height = 50
+clock = pygame.time.Clock()
+FPS = 50
+
+tile_images = {
+    'wall': load_image('box.png'),
+    'empty': load_image('grass.png')
+}
+player_image = load_image('mar.png')
+n_level = input('Выберети уровень от 1 до 9: ')
+player, x, y = generate_level(load_level('level'+n_level+'.txt'))
+
+size = WIDTH, HEIGHT = x * tile_width, y * tile_height
+screen = pygame.display.set_mode(size)
 
 start_screen()
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
+            pygame.quit()
     for key, func in [(pygame.K_RIGHT, player.right),
                       (pygame.K_LEFT, player.left),
                       (pygame.K_DOWN, player.down), (pygame.K_UP, player.up)]:

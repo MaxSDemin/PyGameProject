@@ -58,7 +58,7 @@ class Ground:
 pygame.init()
 size = width, height = 600, 800
 screen = pygame.display.set_mode(size)
-color = (0, 255, 255)
+color = (255, 255, 255)
 
 ground = Ground(10, 10)
 running = True

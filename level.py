@@ -131,7 +131,7 @@ def start_screen():
                 return  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
-
+print(1)
 
 start_screen()
 while True:
@@ -149,3 +149,4 @@ while True:
     player_group.draw(screen)
     pygame.display.flip()
     clock.tick(60)
+

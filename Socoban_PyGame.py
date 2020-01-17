@@ -35,14 +35,14 @@ def try_again():
                     'try again']
     fon = pygame.transform.scale(load_image('welcome_fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font('font.ttf', 30)
-    text_coord = 50
+    font = pygame.font.Font('font.ttf', 40)
+    text_coord = 200
     for line in welcome_text:
         string_rendered = font.render(line, 1, pygame.Color('red'))
         intro_rect = string_rendered.get_rect()
-        text_coord += 10
+        text_coord += 20
         intro_rect.top = text_coord
-        intro_rect.x = 10
+        intro_rect.x = 200
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
     while True:
@@ -126,7 +126,7 @@ def start_screen():
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('data/', name)
+    fullname = os.path.join('data/40/', name)
     try:
         image = pygame.image.load(fullname)
     except pygame.error as message:
@@ -226,13 +226,13 @@ class Player(pygame.sprite.Sprite):
 
     def score_print(self):
         text = 'Счёт: ' + str(self.score)
-        font = pygame.font.Font(None, 24)
+        font = pygame.font.Font(None, 35)
         text_coord = 50
         string_rendered = font.render(text, 1, pygame.Color('white'))
         score_rect = string_rendered.get_rect()
         score_rect.top = text_coord
-        score_rect.x = 10
-        score_rect.y = 300
+        score_rect.x = 20
+        score_rect.y = 610
         text_coord += score_rect.height
         screen.blit(string_rendered, score_rect)
 
@@ -403,10 +403,8 @@ point_group = pygame.sprite.Group()
 life_group = pygame.sprite.Group()
 
 # подгрузка картинок
-tile_images = {'empty': load_image('grass.png')}
+tile_images = {'empty': load_image('182.png')}
 player_image = load_image('91.png')
-
-tile_width = tile_height = 50
 
 
 class Camera:
@@ -428,7 +426,7 @@ class Camera:
 
 pygame.init()
 
-tile_width = tile_height = 20
+tile_width = tile_height = 40
 clock = pygame.time.Clock()
 
 # n_level = input('Выберети уровень от 1 до 3: ')

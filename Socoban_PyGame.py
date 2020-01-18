@@ -10,6 +10,11 @@ def terminate():
     pygame.quit()
     sys.exit()
 
+def win(): # победа
+    global opened_levels, level_list
+    opened_levels += 1
+    level_list[opened_levels][1] = 0
+    level_choose()
 
 def game_over():
     x = -610
@@ -31,18 +36,20 @@ def game_over():
 def try_again():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
-    welcome_text = ['MONSTER',
-                    'try again']
+    welcome_text = ['Упс, тебя съели!!!', '',
+                    ' Попробуй еще раз', '', '', '', '',
+                    'Нажмите ПКМ/ЛКМ',
+                    'чтобы продолжить...']
     fon = pygame.transform.scale(load_image('welcome_fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font('font.ttf', 40)
-    text_coord = 200
+    font = pygame.font.Font('font.ttf', 37)
+    text_coord = 20
     for line in welcome_text:
         string_rendered = font.render(line, 1, pygame.Color('red'))
         intro_rect = string_rendered.get_rect()
         text_coord += 20
         intro_rect.top = text_coord
-        intro_rect.x = 200
+        intro_rect.x = 80
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
     while True:
@@ -61,16 +68,28 @@ def try_again():
         clock.tick(FPS)
 
 
-def level_choose():
+def start_screen():
+    pygame.mixer.music.load('sound/start.mp3')
+    pygame.mixer.music.play()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
-    welcome_text = ['play']
+
+    welcome_text = [' ']
     fon = pygame.transform.scale(load_image('welcome_fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font('font.ttf', 24)
     text_coord = 50
+
+    game_name_text = ['Pac-Man-Don']
+    for i in game_name_text:
+        text_rendered = font.render(i, 1, pygame.Color('white'))
+        game_name_text_rect = text_rendered.get_rect()
+        game_name_text_rect.x = 200
+        game_name_text_rect.y = 80
+        screen.blit(text_rendered, game_name_text_rect)
+
     for line in welcome_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
+        string_rendered = font.render(line, 1, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
@@ -78,52 +97,65 @@ def level_choose():
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
     # play button
-    play_button = pygame.transform.scale(load_image('play_button.png'), (324, 141))
+    play_button = pygame.transform.scale(load_image('play_button.png'),
+                                         (324, 141))
     cord_button = play_button.get_rect()
-    cord_button.x = 150
-    cord_button.y = 350
-    screen.blit(play_button, (150, 350))
+    cord_button.x = WIDTH / 4
+    cord_button.y = 400
+    screen.blit(play_button, (150, 450))
     while True:
         for event in pygame.event.get():
-            # print(pygame.mouse.get_focused)
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                if x >= 158 and y >= 364:
-                    if x <= 463 and y <= 479:
+                if x >= 160 and y >= 465:
+                    if x <= 465 and y <= 582:
+                        pygame.mixer.music.pause()
                         return  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
 
 
-def start_screen():
-    intro_text = ["ЗАСТАВКА", "",
-                  "Правила игры: ",
-                  "Чтобы двиграть нажимайте стрелки.", '',
-                  "Цель игры не известна, но скоро она точно будет!", '',
-                  "Хорошей игры!"]
+level_list = [["Уровень 1", 0], ['Уровень 2', 1], ['Уровень 3', 1], ['Уровень 4', 1]]
 
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+
+def level_choose():
+    global level_list
+    color = [pygame.Color('white'), pygame.Color(50, 50, 50, 255)]
+    fon = pygame.transform.scale(load_image('back_ground.png'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font('font.ttf', 15)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
+    font = pygame.font.Font('font.ttf', 30)
+
+    game_name_text = 'Выберите уровень: '
+    text_rendered = font.render(game_name_text, 1, pygame.Color('white'))
+    game_name_text_rect = text_rendered.get_rect()
+    game_name_text_rect.x = WIDTH/2 - game_name_text_rect.width/2
+    game_name_text_rect.y = 65
+    screen.blit(text_rendered, game_name_text_rect)
+
+    font = pygame.font.Font('font.ttf', 25)
+    n_string = 250
+    level_text = []
+    for level, c in level_list:
+        text_rendered = font.render(level, 1, color[c])
+        level_text_rect = text_rendered.get_rect()
+        level_text.append(level_text_rect)
+        level_text_rect.x = WIDTH/2 - level_text_rect.width/2
+        level_text_rect.y = n_string
+        n_string += 55
+        screen.blit(text_rendered, level_text_rect)
+
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return  # начинаем игру
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for num_level, lt in enumerate(level_text):
+                    if lt.x < event.pos[0] < lt.x + lt.width and lt.y < event.pos[1] < lt.y + lt.height:
+                        if level_list[num_level][1] == 0:
+                            return num_level+1  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -153,10 +185,6 @@ def load_level(filename):
         background = mapFile.readline()[11:]
         for line in mapFile:
             level_map.append(line.rstrip(',\n').split(','))
-    '''print(widht)
-    print(height)
-    print(background)
-    print(level_map)'''
     # и подсчитываем максимальную длину
     # max_width = max(map(len, level_map))
     return level_map
@@ -195,7 +223,7 @@ class Player(pygame.sprite.Sprite):
         self.start_pos_y = pos_y
         self.rect = self.image.get_rect().move(tile_width * pos_x,
                                                tile_height * pos_y)
-        self.speed = 5
+        self.speed = 4
         self.score = 0
         self.status = 'идет игра'
 
@@ -246,7 +274,6 @@ class Player(pygame.sprite.Sprite):
         ghost = pygame.sprite.spritecollideany(self, ghost_group)
         if ghost in ghost_group:
             self.status = 'монстр'
-
             print('monster')
             if len(list_sprites) == 0:
                 game_over()
@@ -262,10 +289,11 @@ class Player(pygame.sprite.Sprite):
         if cherry in cherry_group:
             for ghost in list_ghost:
                 ghost.start_ticks = pygame.time.get_ticks()
-                #print(ghost.start_ticks)
+                # print(ghost.start_ticks)
             self.score += 50
             cherry.kill()
         if not point_group:
+            win()
             print('Game end')
 
 
@@ -298,10 +326,11 @@ class Ghost(pygame.sprite.Sprite):
         super().__init__(ghost_group, all_sprites)
         self.start_pos_x = pos_x
         self.start_pos_y = pos_y
+        self.start_picture = tile_type
         self.image = load_image(tile_type + '.png')
         self.rect = self.image.get_rect().move(tile_width * pos_x,
                                                tile_height * pos_y)
-        self.speed = 3
+        self.speed = 2
         self.direction = 'down'
         self.list_dir = ['up', 'left', 'down', 'right']
         self.timer = 60
@@ -337,6 +366,8 @@ class Ghost(pygame.sprite.Sprite):
                     continue
                 self.direction = 'up'
                 not_variant = False
+                self.image = load_image(
+                    str(int(self.start_picture) + 3) + '.png')
                 break
             if rnd_dir == 'down':
                 self.rect.y += self.speed
@@ -345,6 +376,7 @@ class Ghost(pygame.sprite.Sprite):
                     continue
                 self.direction = 'down'
                 not_variant = False
+                self.image = load_image(self.start_picture + '.png')
                 break
             if rnd_dir == 'left':
                 self.rect.x -= self.speed
@@ -353,6 +385,8 @@ class Ghost(pygame.sprite.Sprite):
                     continue
                 self.direction = 'left'
                 not_variant = False
+                self.image = load_image(
+                    str(int(self.start_picture) + 2) + '.png')
                 break
             if rnd_dir == 'right':
                 self.rect.x += self.speed
@@ -361,6 +395,8 @@ class Ghost(pygame.sprite.Sprite):
                     continue
                 self.direction = 'right'
                 not_variant = False
+                self.image = load_image(
+                    str(int(self.start_picture) + 1) + '.png')
                 break
         if not_variant:
             if back_move == 'up':
@@ -375,7 +411,6 @@ class Ghost(pygame.sprite.Sprite):
 
     def time_scale(self):
         seconds = (pygame.time.get_ticks() - self.start_ticks) / 1000
-        print(seconds)
         if seconds < 5:
             self.speed = 1
         else:
@@ -439,20 +474,25 @@ life_group = pygame.sprite.Group()
 tile_images = {'empty': load_image('182.png')}
 player_image = load_image('91.png')
 
-
 pygame.init()
 
 tile_width = tile_height = 40
 clock = pygame.time.Clock()
 
-# n_level = input('Выберети уровень от 1 до 3: ')
-player, x, y, list_sprites, list_ghost = generate_level(load_level('pacman_level_02.txt'))
+x = 15
+y = 15
+
 
 size = WIDTH, HEIGHT = x * tile_width, y * tile_height
 screen = pygame.display.set_mode(size)
-
-level_choose()
 start_screen()
+n_level = str(level_choose())
+
+player, x, y, list_sprites, list_ghost = generate_level(load_level('level_'+n_level+'.txt'))
+print(n_level)
+
+opened_levels = 2
+
 
 while True:
     for event in pygame.event.get():

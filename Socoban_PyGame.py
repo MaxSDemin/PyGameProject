@@ -15,7 +15,7 @@ def game_over():
     x = -610
     v = 200
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    img = load_image("gameover.png")
+    img = pygame.transform.scale(load_image('gameover.png'), (WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     while True:
         for event in pygame.event.get():
@@ -23,7 +23,7 @@ def game_over():
                 terminate()
         if x <= 0:
             x += v * clock.tick() / 1000
-        screen.fill((0, 0, 255))
+        screen.fill((0, 0, 0))
         screen.blit(img, (x, 10))
         pygame.display.flip()
 
@@ -49,8 +49,7 @@ def try_again():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
 
                 for ghost in list_ghost:
                     ghost.start_pos()
@@ -65,10 +64,7 @@ def try_again():
 def level_choose():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
-    welcome_text = ['Welcome to my first game on PyGame ', '',
-                    "I think you'll enjoy it", '',
-                    'Have fun and good luck!', '', '', '', '',
-                    'Click to continue']
+    welcome_text = ['play']
     fon = pygame.transform.scale(load_image('welcome_fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font('font.ttf', 24)
@@ -81,15 +77,22 @@ def level_choose():
         intro_rect.x = 10
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
-        # print(intro_rect)
-        # print(intro_rect.height)
+    # play button
+    play_button = pygame.transform.scale(load_image('play_button.png'), (324, 141))
+    cord_button = play_button.get_rect()
+    cord_button.x = 150
+    cord_button.y = 350
+    screen.blit(play_button, (150, 350))
     while True:
         for event in pygame.event.get():
+            # print(pygame.mouse.get_focused)
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return  # начинаем игру
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if x >= 158 and y >= 364:
+                    if x <= 463 and y <= 479:
+                        return  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -243,6 +246,8 @@ class Player(pygame.sprite.Sprite):
         ghost = pygame.sprite.spritecollideany(self, ghost_group)
         if ghost in ghost_group:
             self.status = 'монстр'
+
+            print('monster')
             if len(list_sprites) == 0:
                 game_over()
             for_kill = list_sprites.pop()
@@ -255,6 +260,9 @@ class Player(pygame.sprite.Sprite):
             self.score += 100
             coin.kill()
         if cherry in cherry_group:
+            for ghost in list_ghost:
+                ghost.start_ticks = pygame.time.get_ticks()
+                #print(ghost.start_ticks)
             self.score += 50
             cherry.kill()
         if not point_group:
@@ -293,12 +301,15 @@ class Ghost(pygame.sprite.Sprite):
         self.image = load_image(tile_type + '.png')
         self.rect = self.image.get_rect().move(tile_width * pos_x,
                                                tile_height * pos_y)
-        self.speed = 2
+        self.speed = 3
         self.direction = 'down'
         self.list_dir = ['up', 'left', 'down', 'right']
+        self.timer = 60
+        self.start_ticks = -5000
 
     def update(self, *args):
         self.moving()
+        self.time_scale()
 
     def start_pos(self):
         self.rect.move(self.start_pos_x * tile_width,
@@ -362,6 +373,14 @@ class Ghost(pygame.sprite.Sprite):
                 self.rect.x += self.speed
             self.direction = back_move
 
+    def time_scale(self):
+        seconds = (pygame.time.get_ticks() - self.start_ticks) / 1000
+        print(seconds)
+        if seconds < 5:
+            self.speed = 1
+        else:
+            self.speed = 2
+
 
 def generate_level(level):
     list_sprites = []
@@ -388,25 +407,6 @@ def generate_level(level):
     return new_player, x + 1, y + 2, list_sprites, list_ghost
 
 
-# основной персонаж
-player = None
-
-# группы спрайтов
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
-wall_group = pygame.sprite.Group()
-coins_group = pygame.sprite.Group()
-ghost_group = pygame.sprite.Group()
-cherry_group = pygame.sprite.Group()
-point_group = pygame.sprite.Group()
-life_group = pygame.sprite.Group()
-
-# подгрузка картинок
-tile_images = {'empty': load_image('182.png')}
-player_image = load_image('91.png')
-
-
 class Camera:
     # зададим начальный сдвиг камеры
     def __init__(self):
@@ -424,20 +424,34 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - tile_height // 2)
 
 
+# группы спрайтов
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+wall_group = pygame.sprite.Group()
+coins_group = pygame.sprite.Group()
+ghost_group = pygame.sprite.Group()
+cherry_group = pygame.sprite.Group()
+point_group = pygame.sprite.Group()
+life_group = pygame.sprite.Group()
+
+# подгрузка картинок
+tile_images = {'empty': load_image('182.png')}
+player_image = load_image('91.png')
+
+
 pygame.init()
 
 tile_width = tile_height = 40
 clock = pygame.time.Clock()
 
 # n_level = input('Выберети уровень от 1 до 3: ')
-player, x, y, list_sprites, list_ghost = generate_level(
-    load_level('pacman_level_02.txt'))
+player, x, y, list_sprites, list_ghost = generate_level(load_level('pacman_level_02.txt'))
 
 size = WIDTH, HEIGHT = x * tile_width, y * tile_height
 screen = pygame.display.set_mode(size)
 
 level_choose()
-
 start_screen()
 
 while True:
@@ -459,7 +473,7 @@ while True:
         cherry_group.draw(screen)
         point_group.draw(screen)
         player_group.draw(screen)
-        player_group.update()
+        #  player_group.update()
         ghost_group.draw(screen)
         life_group.draw(screen)
 

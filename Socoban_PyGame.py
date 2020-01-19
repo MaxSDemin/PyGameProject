@@ -1,20 +1,145 @@
 import pygame
 import sys
 import os
+from os import path
 from random import randint
 
 FPS = 50
+level_list = [["Уровень 1", 0], ['Уровень 2', 1], ['Уровень 3', 1],
+              ['Уровень 4', 1]]
 
 
 def terminate():
     pygame.quit()
     sys.exit()
 
-def win(): # победа
+
+def game_end():
+    color = [pygame.Color('white'), pygame.Color(50, 50, 50, 255)]
+    fon = pygame.transform.scale(load_image('The-End-Game.png'),
+                                 (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font('font.ttf', 30)
+
+    game_name_text = ('Нажмите ЛКМ...')
+    text_rendered = font.render(game_name_text, 1, pygame.Color('white'))
+    game_name_text_rect = text_rendered.get_rect()
+    game_name_text_rect.x = WIDTH / 2 - game_name_text_rect.width / 2
+    game_name_text_rect.y = HEIGHT - 58
+    screen.blit(text_rendered, game_name_text_rect)
+
+    game_result_text = ('Ваш резельтат: ' + str(player.score))
+    text_rendered = font.render(game_result_text, 1, pygame.Color('white'))
+    game_result_text_rect = text_rendered.get_rect()
+    game_result_text_rect.x = 150
+    game_result_text_rect.y = 22
+    screen.blit(text_rendered, game_result_text_rect)
+    print('Ваш резельтат: ', player.score)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+class StartScreen():
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.start_screen()
+
+    def start_screen(self):
+        pygame.mixer.music.load('sound/start.mp3')
+        pygame.mixer.music.play()
+        screen = pygame.display.set_mode((self.width, self.height))
+        clock = pygame.time.Clock()
+
+        welcome_text = [' ']
+        fon = pygame.transform.scale(load_image('welcome_fon.jpg'),
+                                     (self.width, self.height))
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font('font.ttf', 24)
+        text_coord = 50
+
+        game_name_text = ['Pac-Man-Don']
+        for i in game_name_text:
+            text_rendered = font.render(i, 1, pygame.Color('white'))
+            game_name_text_rect = text_rendered.get_rect()
+            game_name_text_rect.x = 200
+            game_name_text_rect.y = 80
+            screen.blit(text_rendered, game_name_text_rect)
+
+        for line in welcome_text:
+            string_rendered = font.render(line, 1, pygame.Color('white'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 10
+            intro_rect.top = text_coord
+            intro_rect.x = 10
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+        # play button
+        play_button = pygame.transform.scale(load_image('play_button.png'),
+                                             (324, 141))
+        cord_button = play_button.get_rect()
+        cord_button.x = WIDTH / 4
+        cord_button.y = 400
+        screen.blit(play_button, (150, 450))
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    if x >= 160 and y >= 465:
+                        if x <= 465 and y <= 582:
+                            pygame.mixer.music.pause()
+                            return  # начинаем игру
+            pygame.display.flip()
+            clock.tick(FPS)
+
+
+def win():  # победа
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
     global opened_levels, level_list
-    opened_levels += 1
-    level_list[opened_levels][1] = 0
-    level_choose()
+    player.status = 'идет игра'
+    if opened_levels < 4:
+        opened_levels += 1
+    else:
+        player.status = 'game end'
+    print(opened_levels)
+    level_list[opened_levels - 1][1] = 0
+    print('method win completed')
+    fon = pygame.transform.scale(load_image('welcome_fon.jpg'),
+                                 (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font('font.ttf', 26)
+
+    game_win_text = ['ПОДЕДА!!', '', '', '', '', '', '', '', '',
+                     'Нажмите ЛКМ']
+
+    text_coord = 20
+    for line in game_win_text:
+        string_rendered = font.render(line, 1, pygame.Color('red'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 20
+        intro_rect.top = text_coord
+        intro_rect.x = WIDTH / 2 - intro_rect.width / 2
+        intro_rect.y += 50
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
 
 def game_over():
     x = -610
@@ -28,9 +153,36 @@ def game_over():
                 terminate()
         if x <= 0:
             x += v * clock.tick() / 1000
+        else:
+            break
         screen.fill((0, 0, 0))
         screen.blit(img, (x, 10))
         pygame.display.flip()
+
+    font = pygame.font.Font('font.ttf', 26)
+
+    game_win_text = ['', '', '', '', '', '', '', '', '',
+                     'Нажмите ЛКМ']
+
+    text_coord = 20
+    for line in game_win_text:
+        string_rendered = font.render(line, 1, pygame.Color('red'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 20
+        intro_rect.top = text_coord
+        intro_rect.x = WIDTH / 2 - intro_rect.width / 2
+        intro_rect.y += 50
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    k = True
+    while k:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                k = False
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def try_again():
@@ -68,58 +220,6 @@ def try_again():
         clock.tick(FPS)
 
 
-def start_screen():
-    pygame.mixer.music.load('sound/start.mp3')
-    pygame.mixer.music.play()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    clock = pygame.time.Clock()
-
-    welcome_text = [' ']
-    fon = pygame.transform.scale(load_image('welcome_fon.jpg'), (WIDTH, HEIGHT))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font('font.ttf', 24)
-    text_coord = 50
-
-    game_name_text = ['Pac-Man-Don']
-    for i in game_name_text:
-        text_rendered = font.render(i, 1, pygame.Color('white'))
-        game_name_text_rect = text_rendered.get_rect()
-        game_name_text_rect.x = 200
-        game_name_text_rect.y = 80
-        screen.blit(text_rendered, game_name_text_rect)
-
-    for line in welcome_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-    # play button
-    play_button = pygame.transform.scale(load_image('play_button.png'),
-                                         (324, 141))
-    cord_button = play_button.get_rect()
-    cord_button.x = WIDTH / 4
-    cord_button.y = 400
-    screen.blit(play_button, (150, 450))
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
-                if x >= 160 and y >= 465:
-                    if x <= 465 and y <= 582:
-                        pygame.mixer.music.pause()
-                        return  # начинаем игру
-        pygame.display.flip()
-        clock.tick(FPS)
-
-
-level_list = [["Уровень 1", 0], ['Уровень 2', 1], ['Уровень 3', 1], ['Уровень 4', 1]]
-
-
 def level_choose():
     global level_list
     color = [pygame.Color('white'), pygame.Color(50, 50, 50, 255)]
@@ -130,7 +230,7 @@ def level_choose():
     game_name_text = 'Выберите уровень: '
     text_rendered = font.render(game_name_text, 1, pygame.Color('white'))
     game_name_text_rect = text_rendered.get_rect()
-    game_name_text_rect.x = WIDTH/2 - game_name_text_rect.width/2
+    game_name_text_rect.x = WIDTH / 2 - game_name_text_rect.width / 2
     game_name_text_rect.y = 65
     screen.blit(text_rendered, game_name_text_rect)
 
@@ -141,11 +241,10 @@ def level_choose():
         text_rendered = font.render(level, 1, color[c])
         level_text_rect = text_rendered.get_rect()
         level_text.append(level_text_rect)
-        level_text_rect.x = WIDTH/2 - level_text_rect.width/2
+        level_text_rect.x = WIDTH / 2 - level_text_rect.width / 2
         level_text_rect.y = n_string
         n_string += 55
         screen.blit(text_rendered, level_text_rect)
-
 
     while True:
         for event in pygame.event.get():
@@ -153,9 +252,10 @@ def level_choose():
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for num_level, lt in enumerate(level_text):
-                    if lt.x < event.pos[0] < lt.x + lt.width and lt.y < event.pos[1] < lt.y + lt.height:
+                    if lt.x < event.pos[0] < lt.x + lt.width and lt.y < \
+                            event.pos[1] < lt.y + lt.height:
                         if level_list[num_level][1] == 0:
-                            return num_level+1  # начинаем игру
+                            return num_level + 1  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -202,6 +302,7 @@ class Life(pygame.sprite.Sprite):
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
+        tile_images = load_image('182.png')
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_x,
                                                tile_height * pos_y)
@@ -218,11 +319,14 @@ class Wall(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
+        player_image = load_image('91.png')
         self.image = player_image
         self.start_pos_x = pos_x
         self.start_pos_y = pos_y
         self.rect = self.image.get_rect().move(tile_width * pos_x,
                                                tile_height * pos_y)
+        self.eat_sound = pygame.mixer.Sound('sound/eat_point.ogg')
+        self.lost_sound = pygame.mixer.Sound('sound/lost.ogg')
         self.speed = 4
         self.score = 0
         self.status = 'идет игра'
@@ -274,14 +378,17 @@ class Player(pygame.sprite.Sprite):
         ghost = pygame.sprite.spritecollideany(self, ghost_group)
         if ghost in ghost_group:
             self.status = 'монстр'
+            self.lost_sound.play()
             print('monster')
             if len(list_sprites) == 0:
-                game_over()
+                self.status = 'конец игры'
+                return
             for_kill = list_sprites.pop()
             for_kill.kill()
 
         if point in point_group:
             self.score += 10
+            self.eat_sound.play()
             point.kill()
         if coin in coins_group:
             self.score += 100
@@ -293,7 +400,7 @@ class Player(pygame.sprite.Sprite):
             self.score += 50
             cherry.kill()
         if not point_group:
-            win()
+            self.status = 'выигрыш'
             print('Game end')
 
 
@@ -459,6 +566,8 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - tile_height // 2)
 
 
+# НАЧАЛО ПРОГРАММЫ
+
 # группы спрайтов
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
@@ -470,55 +579,82 @@ cherry_group = pygame.sprite.Group()
 point_group = pygame.sprite.Group()
 life_group = pygame.sprite.Group()
 
-# подгрузка картинок
-tile_images = {'empty': load_image('182.png')}
-player_image = load_image('91.png')
-
 pygame.init()
 
 tile_width = tile_height = 40
 clock = pygame.time.Clock()
 
-x = 15
-y = 15
+opened_levels = 1
 
+x = 15
+y = 16
 
 size = WIDTH, HEIGHT = x * tile_width, y * tile_height
 screen = pygame.display.set_mode(size)
-start_screen()
-n_level = str(level_choose())
 
-player, x, y, list_sprites, list_ghost = generate_level(load_level('level_'+n_level+'.txt'))
-print(n_level)
+StartScreen(WIDTH, HEIGHT)
+last_level = False
 
-opened_levels = 2
-
-
+player = Player(-1, -1)
+player.status = 'идет игра'
 while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            terminate()
-            pygame.quit()
-    for key, func in [(pygame.K_d, player.right), (pygame.K_a, player.left),
-                      (pygame.K_s, player.down), (pygame.K_w, player.up)]:
-        if pygame.key.get_pressed()[key]:
-            func()
+    all_sprites = pygame.sprite.Group()
+    tiles_group = pygame.sprite.Group()
+    player_group = pygame.sprite.Group()
+    wall_group = pygame.sprite.Group()
+    coins_group = pygame.sprite.Group()
+    ghost_group = pygame.sprite.Group()
+    cherry_group = pygame.sprite.Group()
+    point_group = pygame.sprite.Group()
+    life_group = pygame.sprite.Group()
 
-    if player.status == 'идет игра':
-        all_sprites.update()
-        screen.fill((0, 0, 0))
-        tiles_group.draw(screen)
-        wall_group.draw(screen)
-        coins_group.draw(screen)
-        cherry_group.draw(screen)
-        point_group.draw(screen)
-        player_group.draw(screen)
-        #  player_group.update()
-        ghost_group.draw(screen)
-        life_group.draw(screen)
+    if player.status == 'конец игры':
+        last_level = True
 
-        player.score_print()
-        pygame.display.flip()
-        clock.tick(60)
-    if player.status == 'монстр':
-        try_again()
+    if last_level:
+        print('STOP')
+        break
+
+    n_level = str(level_choose())
+    if int(n_level) == 4:
+        last_level = True
+
+    player, x, y, list_sprites, list_ghost = generate_level(
+        load_level('level_' + n_level + '.txt'))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+                pygame.quit()
+        for key, func in [(pygame.K_d, player.right), (pygame.K_a, player.left),
+                          (pygame.K_s, player.down), (pygame.K_w, player.up)]:
+            if pygame.key.get_pressed()[key]:
+                func()
+
+        if player.status == 'конец игры':
+            game_over()
+            break
+
+        if player.status == 'идет игра':
+            all_sprites.update()
+            screen.fill((0, 0, 0))
+            tiles_group.draw(screen)
+            wall_group.draw(screen)
+            coins_group.draw(screen)
+            cherry_group.draw(screen)
+            point_group.draw(screen)
+            player_group.draw(screen)
+            ghost_group.draw(screen)
+            life_group.draw(screen)
+
+            player.score_print()
+            pygame.display.flip()
+            clock.tick(60)
+        if player.status == 'монстр':
+            try_again()
+        if player.status == 'выигрыш':
+            win()
+            break
+
+game_end()
